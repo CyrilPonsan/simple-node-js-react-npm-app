@@ -6,7 +6,6 @@ pipeline {
         }
     }
 
-
     environment {
         NODE_VERSION = '20.x'
     }
@@ -47,7 +46,7 @@ pipeline {
             steps {
                 sshagent(['secret_ssh']) {
                     sh '''
-                        scp -r * admin@ec2-13-39-155-135.eu-west-3.compute.amazonaws.com
+                        scp -r * admin@ec2-13-39-155-135.eu-west-3.compute.amazonaws.com:~/web
                     '''
                 }
             }
