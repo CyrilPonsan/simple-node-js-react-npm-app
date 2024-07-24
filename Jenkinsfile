@@ -2,8 +2,10 @@ pipeline {
     agent {
         docker {
             image 'node:20'
+            args '-u root' // Run the container as root to avoid permission issues
         }
     }
+
 
     environment {
         NODE_VERSION = '20.x'
