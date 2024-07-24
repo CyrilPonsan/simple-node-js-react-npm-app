@@ -44,7 +44,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['secret_ssh']) {
+                sshagent(['SSH_KEY']) {
                     sh '''
                         scp -r * admin@ec2-13-39-155-135.eu-west-3.compute.amazonaws.com:~/web
                     '''
