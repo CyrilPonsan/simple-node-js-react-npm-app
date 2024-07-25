@@ -29,23 +29,8 @@ pipeline {
         stage('Build') {
             steps {
                 // Build the application (if required)
-                sh 'npm run build'
-            
+                sh 'npm run build'   
+            }
         }
     }
-
-    post {
-        always {
-            // Cleanup, notifications, etc.
-            echo 'Pipeline finished.'
-        }
-        success {
-            echo 'Pipeline succeeded.'
-        }
-        failure {
-            echo 'Pipeline failed.'
-        }
-    }
-}
-
 }
