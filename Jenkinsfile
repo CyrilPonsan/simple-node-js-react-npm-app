@@ -1,34 +1,92 @@
 pipeline {
     agent any
-
-    environment {
-        NODE_VERSION = '20.x'
+    
+   tools {
+        nodejs 'nodejs21'
     }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+        SONAR_TOKEN = credentials('sonar-token') 
+        SONAR_HOST_URL = 'http://51.15.183.215:9000/' 
+    }
+    
 
     stages {
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
-                // Checkout the code from the Git repository
-                git branch: 'cicd', credentialsId: 'cyril-token-lxp', url: 'https://github.com/CyrilPonsan/simple-node-js-react-npm-app.git'
-            }
+                git branch: 'cicd', credentialsId: 'cyril-token-lxp', url: 'https://github.com/StudioFabrique/lxp.git'
         }
-
-        stage('Install Dependencies') {
+        
+         stage('Load Credentials') {
             steps {
-                echo "Hello Toto"
-                // Install npm dependencies
-                sh 'npm install'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                withCredentials([string(credentialsId: 'SECRET_MESSAGE', variable: 'MY_SECRET_TEXT')]) {
-                    echo MY_SECRET_TEXT
-                    // Build the application (if required)
-                    sh 'npm run build'
+                withCredentials([file(credentialsId: 'env-file', variable: 'ENV_FILE')]) {
+                    sh 'cp $ENV_FILE .env'
+                    sh 'export $(grep -v ^# .env | xargs)'
                 }
             }
         }
+
+        
+          stage('Trivy FS Scan') {
+            steps {
+               sh 'trivy filesystem --format table -o fs-report.html .'
+            }
+        }
+        
+          stage('SoanrQube') {
+            steps {
+                sh """
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=lxp  \
+                    -Dsonar.projectName=lxp \
+                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.login=${SONAR_TOKEN}
+                """
+            }
+        }
+        
+        
+/*          stage('SoanrQube') {
+            steps {
+                sh '${SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=Campground -Dsonar.projectName=Campground'
+            }
+        }*/
+        
+          stage('Docker build & tag') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: 'docker-registry', toolName: 'docker') {
+                        sh 'docker build -t studiostep/lxp:latest .'
+                    }
+               }
+            }
+        }
+        
+          stage('Trivy Image scan') {
+            steps {
+                sh 'trivy image --format table -o fs-report.html studiostep/lxp:latest'
+            }
+        }
+        
+          stage('Docker Push image') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: 'docker-registry', toolName: 'docker') {
+                        sh 'docker push studiostep/lxp:latest'
+                    }
+               }
+            }
+        }
+        
+          stage('Docker Deploy to dev') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: 'docker-registry', toolName: 'docker') {
+                        sh 'docker compose up -d'
+                    }
+               }
+            }
+        }
+        
     }
 }
