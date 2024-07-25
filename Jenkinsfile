@@ -16,6 +16,7 @@ pipeline {
             steps {
                 git branch: 'cicd', credentialsId: 'cyril-token-lxp', url: 'https://github.com/StudioFabrique/lxp.git'
         }
+        }
         
          stage('Load Credentials') {
             steps {
@@ -88,5 +89,5 @@ pipeline {
             }
         }
         
-    }
+    
 }
