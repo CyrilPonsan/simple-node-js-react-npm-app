@@ -20,7 +20,6 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo 
                 // Install npm dependencies
                 sh 'npm install'
             }
@@ -30,8 +29,8 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'SECRET_MESSAGE', variable: 'MY_SECRET_TEXT')]) {
                     echo MY_SECRET_TEXT
-                // Build the application (if required)
-                sh 'npm run build'
+                    // Build the application (if required)
+                    sh 'npm run build'
             }
         }
     }
