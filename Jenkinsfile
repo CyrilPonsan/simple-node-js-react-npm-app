@@ -18,18 +18,9 @@ pipeline {
             }
         }
 
-        stage('Setup Node.js') {
-            steps {
-                // Set up Node.js environment
-                sh '''
-                    curl -sL https://deb.nodesource.com/setup_$NODE_VERSION | bash -
-                    apt-get install -y nodejs
-                '''
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
+                echo 
                 // Install npm dependencies
                 sh 'npm install'
             }
@@ -37,18 +28,10 @@ pipeline {
 
         stage('Build') {
             steps {
+                withCredentials([string(credentialsId: 'SECRET_MESSAGE', variable: 'MY_SECRET_TEXT')]) {
+                    echo MY_SECRET_TEXT
                 // Build the application (if required)
                 sh 'npm run build'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sshagent(['AKIA34QIXZMCRMX3VHXG']) {
-                    sh '''
-                        scp -r * admin@ec2-13-39-155-135.eu-west-3.compute.amazonaws.com:~/web
-                    '''
-                }
             }
         }
     }
