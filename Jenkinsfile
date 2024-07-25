@@ -23,8 +23,11 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build the application (if required)
-                sh 'npm run build'   
+                withCredentials([string(credentialsId: 'my_secret_text_id', variable: 'MY_SECRET_TEXT')]) {
+                    echo MY_SECRET_TEXT
+                    // Build the application (if required)
+                    sh 'npm run build'
+                }
             }
         }
     }
